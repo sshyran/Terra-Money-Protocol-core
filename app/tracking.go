@@ -11,6 +11,7 @@ import (
 	core "github.com/terra-project/core/types"
 	"github.com/terra-project/core/x/auth"
 	"github.com/terra-project/core/x/staking"
+	"github.com/terra-project/core/x/supply"
 )
 
 /*
@@ -114,6 +115,12 @@ func (app *TerraApp) trackingAll(ctx sdk.Context) {
 	accs := []authexported.Account{}
 	vestingCoins := sdk.NewCoins()
 	app.accountKeeper.IterateAccounts(ctx, func(acc authexported.Account) bool {
+
+		// Skip module accounts from tracking
+		if _, ok := acc.(supply.ModuleAccount); ok {
+			return false
+		}
+
 		// Record vesting accounts
 		if vacc, ok := acc.(auth.VestingAccount); ok {
 			vestingCoins = vestingCoins.Add(vacc.GetVestingCoins(ctx.BlockHeader().Time))
