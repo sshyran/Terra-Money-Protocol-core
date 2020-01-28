@@ -13,6 +13,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
+
+	"github.com/terra-project/core/x/distribution/client/rest"
 )
 
 var (
@@ -49,6 +51,8 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 
 // RegisterRESTRoutes registers the REST routes for the distribution module.
 func (AppModuleBasic) RegisterRESTRoutes(cliCtx context.CLIContext, route *mux.Router) {
+	// customize withdraw rewards
+	rest.RegisterRoutes(cliCtx, route, StoreKey)
 	CosmosAppModuleBasic{}.RegisterRESTRoutes(cliCtx, route)
 }
 
