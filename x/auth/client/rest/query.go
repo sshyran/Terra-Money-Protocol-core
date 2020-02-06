@@ -91,8 +91,6 @@ func QueryTxsRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			events = append(events, txHeightEvents...)
 		}
 
-		fmt.Println(events)
-
 		searchResult, err := utils.QueryTxsByEvents(cliCtx, events, page, limit)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
