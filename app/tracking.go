@@ -117,7 +117,7 @@ func (app *TerraApp) trackingAll(ctx sdk.Context) {
 	app.accountKeeper.IterateAccounts(ctx, func(acc authexported.Account) bool {
 
 		// Skip module accounts from tracking
-		if _, ok := acc.(supply.ModuleAccountI); ok{
+		if _, ok := acc.(supply.ModuleAccountI); ok {
 			return false
 		}
 
