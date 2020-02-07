@@ -2,17 +2,17 @@ package rest
 
 import (
 	"fmt"
-	"net/http"
-	"strconv"
-	"strings"
-
-	"github.com/tendermint/tendermint/types"
-
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 	genutilrest "github.com/cosmos/cosmos-sdk/x/genutil/client/rest"
+	"github.com/tendermint/tendermint/types"
+	"github.com/terra-project/core/x/oracle"
+	"net/http"
+	"strconv"
+	"strings"
 )
 
 // QueryTxsHandlerFn implements a REST handler that searches for transactions.
@@ -38,14 +38,24 @@ func QueryTxsRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			}
 		}
 
-		// enforce tx.height query parameter
+		// enforce tx.height query parameter for bank.Send, bank.MultiSend, oracle.ExchangeRateVote, oracle.ExchangeRatePrevote
 		txHeightStr := r.FormValue(types.TxHeightKey)
-		if txHeightStr == "" {
-			rest.WriteErrorResponse(
-				w, http.StatusBadRequest,
-				fmt.Sprint("it is not allowed to query txs without tx.height option. please refer {URL}/swagger-ui"),
-			)
-			return
+
+		emptySend := bank.MsgSend{}
+		emptyMultiSend := bank.MsgMultiSend{}
+		emptyExchangeRatePrevote := oracle.MsgExchangeRatePrevote{}
+		emptyExchangeRateVote := oracle.MsgExchangeRateVote{}
+		actionStr := r.FormValue(fmt.Sprintf("%s.%s", sdk.EventTypeMessage, sdk.AttributeKeyAction))
+		if actionStr == emptySend.Type() || actionStr == emptyMultiSend.Type() ||
+			actionStr == emptyExchangeRatePrevote.Type() || actionStr == emptyExchangeRateVote.Type() {
+
+			if txHeightStr == "" {
+				rest.WriteErrorResponse(
+					w, http.StatusBadRequest,
+					fmt.Sprint("it is not allowed to query txs without tx.height option. please refer {URL}/swagger-ui"),
+				)
+				return
+			}
 		}
 
 		// parse tx.height query parameter
@@ -86,14 +96,14 @@ func QueryTxsRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		// append tx height events
-		if txHeightEvents != nil {
+		//append tx height events
+		if txHeightEvents != nil && len(txHeightEvents) > 0 {
 			events = append(events, txHeightEvents...)
 		}
 
 		searchResult, err := utils.QueryTxsByEvents(cliCtx, events, page, limit)
 		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
