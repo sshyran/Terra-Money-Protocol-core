@@ -60,7 +60,7 @@ func QueryTxsRequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
 
 		// parse tx.height query parameter
 		var txHeightEvents []string
-		if _, err := strconv.ParseInt(txHeightStr, 10, 64); err != nil {
+		if _, err := strconv.ParseInt(txHeightStr, 10, 64); len(txHeightStr) != 0 && err != nil {
 			// remove query parameter to prevent duplicated handling
 			delete(r.Form, types.TxHeightKey)
 
