@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/log"
 	rpcserver "github.com/tendermint/tendermint/rpc/lib/server"
+	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
+	rpccli "github.com/tendermint/tendermint/rpc/client"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -24,6 +26,8 @@ import (
 	_ "github.com/terra-project/core/client/lcd/statik"
 )
 
+const flagRPCTimeout = "rpc-timeout"
+
 // RestServer represents the Light Client Rest server
 type RestServer struct {
 	Mux     *mux.Router
@@ -34,10 +38,18 @@ type RestServer struct {
 	listener net.Listener
 }
 
+// create timeout enabled http client
+func NewTimeoutEnabledHTTP(remote, wsEndpoint string, timeout uint) *rpccli.HTTP {
+	httpClient := rpcclient.DefaultHTTPClient(remote)
+	httpClient.Timeout = time.Duration(timeout) * time.Second
+	return rpccli.NewHTTPWithClient(remote, wsEndpoint, httpClient)
+}
+
 // NewRestServer creates a new rest server instance
 func NewRestServer(cdc *codec.Codec) *RestServer {
 	r := mux.NewRouter()
-	cliCtx := context.NewCLIContext().WithCodec(cdc)
+	httpclient := NewTimeoutEnabledHTTP(viper.GetString(flags.FlagNode), "/websocket", viper.GetUint(flagRPCTimeout))
+	cliCtx := context.NewCLIContext().WithCodec(cdc).WithClient(httpclient)
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout)).With("module", "rest-server")
 
 	return &RestServer{
@@ -98,6 +110,7 @@ func ServeCommand(cdc *codec.Codec, registerRoutesFn func(*RestServer)) *cobra.C
 		},
 	}
 
+	cmd.Flags().Uint(flagRPCTimeout, 10, "The RPC request timeout (in seconds)")
 	return flags.RegisterRestServerFlags(cmd)
 }
 
