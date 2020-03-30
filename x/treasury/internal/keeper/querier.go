@@ -1,13 +1,13 @@
 package keeper
 
 import (
+	core "github.com/terra-project/core/types"
 	"math"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	core "github.com/terra-project/core/types"
 	"github.com/terra-project/core/x/treasury/internal/types"
 )
 
@@ -43,7 +43,7 @@ func queryIndicators(ctx sdk.Context, keeper Keeper) ([]byte, sdk.Error) {
 	taxRewards := sdk.NewDecCoins(keeper.PeekEpochTaxProceeds(ctx))
 	TR := keeper.alignCoins(ctx, taxRewards, core.MicroSDRDenom)
 
-	epoch := core.GetEpoch(ctx)
+	epoch := keeper.GetEpoch(ctx)
 	var res types.IndicatorQueryResonse
 	if epoch == 0 {
 		res = types.IndicatorQueryResonse{
@@ -52,7 +52,7 @@ func queryIndicators(ctx sdk.Context, keeper Keeper) ([]byte, sdk.Error) {
 		}
 	} else {
 		params := keeper.GetParams(ctx)
-		previousEpochCtx := ctx.WithBlockHeight(ctx.BlockHeight() - core.BlocksPerEpoch)
+		previousEpochCtx := ctx.WithBlockHeight(ctx.BlockHeight() - core.BlocksPerWeek)
 		trlYear := keeper.rollingAverageIndicator(previousEpochCtx, params.WindowLong-1, TRL)
 		trlMonth := keeper.rollingAverageIndicator(previousEpochCtx, params.WindowShort-1, TRL)
 

@@ -101,7 +101,11 @@ func (app *TerraApp) trackingAll(ctx sdk.Context) {
 	}
 
 	// Load oracle whitelist
-	denoms := app.oracleKeeper.Whitelist(ctx)
+	var denoms []string
+	for _, denom := range app.oracleKeeper.Whitelist(ctx) {
+		denoms = append(denoms, denom.Name)
+	}
+
 	denoms = append(denoms, app.stakingKeeper.BondDenom(ctx))
 
 	// Minimum coins to be included in tracking

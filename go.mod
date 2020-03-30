@@ -3,7 +3,7 @@ module github.com/terra-project/core
 go 1.13
 
 require (
-	github.com/cosmos/cosmos-sdk v0.37.6
+	github.com/cosmos/cosmos-sdk v0.37.7
 	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d // indirect
 	github.com/gorilla/mux v1.7.2
 	github.com/otiai10/copy v1.0.2
@@ -19,4 +19,5 @@ require (
 	github.com/tendermint/tendermint v0.32.9
 	github.com/tendermint/tm-db v0.2.0
 	golang.org/x/net v0.0.0-20190827160401-ba9fcec4b297 // indirect
+	gopkg.in/yaml.v2 v2.2.7
 )

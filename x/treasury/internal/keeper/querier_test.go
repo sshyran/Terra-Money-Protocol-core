@@ -162,7 +162,7 @@ func TestQueryRewardWeight(t *testing.T) {
 	rewardWeight := sdk.NewDecWithPrec(77, 2)
 	input.TreasuryKeeper.SetRewardWeight(input.Ctx, rewardWeight)
 
-	queriedRewardWeight := getQueriedRewardWeight(t, input.Ctx, input.Cdc, querier, core.GetEpoch(input.Ctx))
+	queriedRewardWeight := getQueriedRewardWeight(t, input.Ctx, input.Cdc, querier, input.TreasuryKeeper.GetEpoch(input.Ctx))
 
 	require.Equal(t, queriedRewardWeight, rewardWeight)
 }
@@ -174,7 +174,7 @@ func TestQueryTaxRate(t *testing.T) {
 	taxRate := sdk.NewDecWithPrec(1, 3)
 	input.TreasuryKeeper.SetTaxRate(input.Ctx, taxRate)
 
-	queriedTaxRate := getQueriedTaxRate(t, input.Ctx, input.Cdc, querier, core.GetEpoch(input.Ctx))
+	queriedTaxRate := getQueriedTaxRate(t, input.Ctx, input.Cdc, querier, input.TreasuryKeeper.GetEpoch(input.Ctx))
 
 	require.Equal(t, queriedTaxRate, taxRate)
 }
@@ -200,7 +200,7 @@ func TestQueryTaxProceeds(t *testing.T) {
 	}
 	input.TreasuryKeeper.RecordEpochTaxProceeds(input.Ctx, taxProceeds)
 
-	queriedTaxProceeds := getQueriedTaxProceeds(t, input.Ctx, input.Cdc, querier, core.GetEpoch(input.Ctx))
+	queriedTaxProceeds := getQueriedTaxProceeds(t, input.Ctx, input.Cdc, querier, input.TreasuryKeeper.GetEpoch(input.Ctx))
 
 	require.Equal(t, queriedTaxProceeds, taxProceeds)
 }
@@ -216,11 +216,11 @@ func TestQuerySeigniorageProceeds(t *testing.T) {
 	input.SupplyKeeper.SetSupply(input.Ctx, supply)
 	input.TreasuryKeeper.RecordEpochInitialIssuance(input.Ctx)
 
-	input.Ctx = input.Ctx.WithBlockHeight(core.BlocksPerEpoch)
+	input.Ctx = input.Ctx.WithBlockHeight(core.BlocksPerWeek)
 	supply = supply.SetTotal(sdk.NewCoins(sdk.NewCoin(core.MicroLunaDenom, targetIssuance.Sub(targetSeigniorage))))
 	input.SupplyKeeper.SetSupply(input.Ctx, supply)
 
-	queriedSeigniorageProceeds := getQueriedSeigniorageProceeds(t, input.Ctx, input.Cdc, querier, core.GetEpoch(input.Ctx))
+	queriedSeigniorageProceeds := getQueriedSeigniorageProceeds(t, input.Ctx, input.Cdc, querier, input.TreasuryKeeper.GetEpoch(input.Ctx))
 
 	require.Equal(t, targetSeigniorage, queriedSeigniorageProceeds)
 }
@@ -238,7 +238,7 @@ func TestQueryIndicators(t *testing.T) {
 	res = sh(input.Ctx, NewTestMsgCreateValidator(addr1, val1, stakingAmt))
 	require.True(t, res.IsOK())
 
-	staking.EndBlocker(input.Ctx.WithBlockHeight(core.BlocksPerEpoch-1), input.StakingKeeper)
+	staking.EndBlocker(input.Ctx.WithBlockHeight(core.BlocksPerWeek-1), input.StakingKeeper)
 
 	proceedsAmt := sdk.NewInt(1000000000000)
 	taxProceeds := sdk.NewCoins(sdk.NewCoin(core.MicroSDRDenom, proceedsAmt))
@@ -259,7 +259,7 @@ func TestQueryIndicators(t *testing.T) {
 	input.TreasuryKeeper.RecordEpochTaxProceeds(input.Ctx, taxProceeds)
 
 	// Change context to next epoch
-	input.Ctx = input.Ctx.WithBlockHeight(core.BlocksPerEpoch)
+	input.Ctx = input.Ctx.WithBlockHeight(core.BlocksPerWeek)
 	queriedIndicators = getQueriedIndicators(t, input.Ctx, input.Cdc, querier)
 	require.Equal(t, targetIndicators, queriedIndicators)
 }
