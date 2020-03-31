@@ -274,7 +274,8 @@ paths:
           x-example: 1
         - in: query
           name: tx.height
-          description: "Tx height range option. It should be integer or query string(GTE, GT, LTE, LT): `GET /txs?tx.height="GTE3,LT10"` or `GET /txs?tx.height=100`\nIn case using query string, the range can not exceed 100"
+          description: "Tx height range option. It should be integer or query string(GTE, GT, LTE, LT): `GET /txs?tx.height=\"GTE3,LT10\"` or `GET /txs?tx.height=100`\nIn case using query string, the range can not exceed 100"
+          type: string
           x-example: 100
       responses:
         200:
