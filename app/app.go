@@ -20,7 +20,6 @@ import (
 
 	treasuryclient "github.com/terra-project/core/x/treasury/client"
 
-	core "github.com/terra-project/core/types"
 	"github.com/terra-project/core/x/auth"
 	"github.com/terra-project/core/x/bank"
 	"github.com/terra-project/core/x/crisis"
@@ -96,6 +95,7 @@ type TerraApp struct {
 
 	invCheckPeriod uint
 	tracking       bool
+	trackingDone   bool
 
 	// keys to access the substores
 	keys  map[string]*sdk.KVStoreKey
@@ -284,10 +284,17 @@ func (app *TerraApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.
 	res := app.mm.EndBlock(ctx, req)
 
 	// vesting & rank tracking
-	blocksPerDay := sdk.NewDecWithPrec(923, 3).MulInt64(core.BlocksPerDay).TruncateInt64()
-	if app.tracking && (ctx.BlockHeight()%(blocksPerDay) == 0) {
-		app.trackingAll(ctx)
+	if app.tracking {
+		if blockTime := ctx.BlockTime(); blockTime.Hour() == 0 && blockTime.Minute() == 0 {
+			if !app.trackingDone {
+				app.trackingAll(ctx)
+				app.trackingDone = true
+			}
+		} else {
+			app.trackingDone = false
+		}
 	}
+
 	return res
 }
 
